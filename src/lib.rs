@@ -1,9 +1,8 @@
-use std::fmt::format;
-
 use once_cell::sync::Lazy;
 
 use prettytable;
 use sysinfo;
+use whoami;
 
 static SYS: Lazy<sysinfo::System> = Lazy::new(|| {
     let mut sys = sysinfo::System::new_all();
@@ -74,4 +73,22 @@ pub fn get_swap() -> String {
     let used_swap = SYS.used_swap();
 
     format!("{} / {}", format_size(used_swap), format_size(total_swap))
+}
+
+pub fn get_host() -> String {
+    let user = whoami::username();
+    let hostname = sysinfo::System::host_name().unwrap();
+    format!("{}@{}", user, hostname)
+}
+
+pub fn get_os() -> String {
+    let os_name = sysinfo::System::name().unwrap();
+    let os_version = sysinfo::System::os_version().unwrap();
+    let os_arch = whoami::arch().to_string();
+    format!("{} {} {}", os_name, os_version, os_arch)
+}
+
+pub fn get_kernel() -> String {
+    let kernel_version = sysinfo::System::kernel_version().unwrap();
+    kernel_version
 }
