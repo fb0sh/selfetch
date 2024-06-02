@@ -1,0 +1,9 @@
+[package]
+name = "selfetch"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+once_cell = "1.19.0"
+prettytable-rs = "0.10.0"
+sysinfo = "0.30.12"
