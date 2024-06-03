@@ -145,7 +145,6 @@ pub fn get_gpu() -> Vec<String> {
             gpus.push(i.trim().to_string());
         }
     }
-    println!("{:?}", gpus);
     gpus
 }
 
@@ -165,26 +164,6 @@ pub fn get_gpu() -> Vec<String> {
             gpus.push(i.trim().to_string());
         }
     }
-    println!("{:?}", gpus);
-    gpus
-}
 
-pub fn get_shell() -> Option<String> {
-    if let Ok(exe_path) = env::current_exe() {
-        if let Some(file_name) = exe_path.file_name() {
-            let exe_name = file_name.to_string_lossy().to_lowercase();
-            if exe_name.contains("powershell") {
-                return Some("PowerShell".to_string());
-            } else if exe_name.contains("cmd") || exe_name.contains("cmd.exe") {
-                return Some("Command Prompt (cmd.exe)".to_string());
-            } else if exe_name.contains("bash") || exe_name.contains("git-bash") {
-                return Some("Git Bash / Bash".to_string());
-            } else if exe_name.contains("zsh") {
-                return Some("Zsh".to_string());
-            } else {
-                return Some("Unknown".to_string());
-            }
-        }
-    }
-    None
+    gpus
 }
