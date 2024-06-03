@@ -35,6 +35,4 @@ fn main() {
     table.add_row(row![Fcb -> "Swap Memory", swp]);
 
     table.printstd();
-
-    println!("{}", get_shell().unwrap());
 }
