@@ -1,6 +1,7 @@
 use once_cell::sync::Lazy;
-
 use prettytable;
+use std::env;
+use std::process::Command;
 use sysinfo;
 use whoami;
 
@@ -91,4 +92,99 @@ pub fn get_os() -> String {
 pub fn get_kernel() -> String {
     let kernel_version = sysinfo::System::kernel_version().unwrap();
     kernel_version
+}
+
+pub fn get_uptime() -> String {
+    let uptime = sysinfo::System::uptime();
+    let days = uptime / 86400;
+    let hours = (uptime % 86400) / 3600;
+    let minutes = (uptime % 3600) / 60;
+    let seconds = uptime % 60;
+
+    format!(
+        "{} days, {} hours, {} mins, {} secs",
+        days, hours, minutes, seconds
+    )
+}
+
+pub fn get_cpu() -> String {
+    let cpu = SYS.cpus().first().unwrap();
+    cpu.brand().to_string()
+}
+
+#[cfg(target_os = "windows")]
+pub fn get_gpu() -> Vec<String> {
+    let output = Command::new("cmd")
+        .args(&["/C", "wmic path win32_videocontroller get caption"])
+        .output()
+        .expect("Failed to execute command");
+    let res = String::from_utf8_lossy(&output.stdout).to_string();
+    let res = res.split("\r\r\n").collect::<Vec<&str>>();
+    let mut gpus = Vec::new();
+    for i in res {
+        if !i.is_empty() {
+            gpus.push(i.trim().to_string());
+        }
+    }
+    gpus
+}
+
+#[cfg(target_os = "linux")]
+pub fn get_gpu() -> Vec<String> {
+    let output = Command::new("sh")
+        .arg("-c")
+        .arg("lspci | grep VGA")
+        .output()
+        .expect("Failed to execute command");
+
+    let res = String::from_utf8_lossy(&output.stdout).to_string();
+    let res = res.split("\r\r\n").collect::<Vec<&str>>();
+    let mut gpus = Vec::new();
+    for i in res {
+        if !i.is_empty() {
+            gpus.push(i.trim().to_string());
+        }
+    }
+    println!("{:?}", gpus);
+    gpus
+}
+
+#[cfg(target_os = "macos")]
+pub fn get_gpu() -> Vec<String> {
+    let output = Command::new("sh")
+        .arg("-c")
+        .arg("system_profiler SPDisplaysDataType | grep Chipset")
+        .output()
+        .expect("Failed to execute command");
+
+    let res = String::from_utf8_lossy(&output.stdout).to_string();
+    let res = res.split("\r\r\n").collect::<Vec<&str>>();
+    let mut gpus = Vec::new();
+    for i in res {
+        if !i.is_empty() {
+            gpus.push(i.trim().to_string());
+        }
+    }
+    println!("{:?}", gpus);
+    gpus
+}
+
+pub fn get_shell() -> Option<String> {
+    if let Ok(exe_path) = env::current_exe() {
+        if let Some(file_name) = exe_path.file_name() {
+            let exe_name = file_name.to_string_lossy().to_lowercase();
+            if exe_name.contains("powershell") {
+                return Some("PowerShell".to_string());
+            } else if exe_name.contains("cmd") || exe_name.contains("cmd.exe") {
+                return Some("Command Prompt (cmd.exe)".to_string());
+            } else if exe_name.contains("bash") || exe_name.contains("git-bash") {
+                return Some("Git Bash / Bash".to_string());
+            } else if exe_name.contains("zsh") {
+                return Some("Zsh".to_string());
+            } else {
+                return Some("Unknown".to_string());
+            }
+        }
+    }
+    None
 }
